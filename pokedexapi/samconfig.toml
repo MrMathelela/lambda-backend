@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "Pokedex"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-j3n1l5pdd6y7"
+s3_prefix = "Pokedex"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+parameter_overrides = "Org=\"Services\" Service=\"pokeapi-urls\" Stage=\"prod\" Owner=\"Simon Mathelela\" Support=\"Simon Mathelela\""

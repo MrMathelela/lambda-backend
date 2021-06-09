@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Simple app which makes an API call and retrieves PokeAPI and acts as the backend
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Environment:
+      Variables:
+        STAGE: !Sub "${Stage}"
+        DEBUG_MODE: 1
+Parameters:
+  Org:
+    Type: String
+    Default: "Services"
+  Service:
+    Type: String
+    Default: "pokeapi-urls"
+  Stage:
+    Type: String
+    Default: "prod"
+  Owner:
+    Type: String
+    Default: "Simon Mathelela"
+  Support:
+    Type: String
+    Default: "Simon Mathelela"
+
+Resources:
+  PokeAPIUrlsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${Org}-${Service}-${Stage}-lambda"
+      Description: Receive Information for the database
+      Role: !GetAtt PokeAPIUrlsRole.Arn
+      CodeUri: poke_apis/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Events:
+        PokeApi:
+          Type: Api
+          Properties:
+            Path: /getall
+            Method: get
+            
+  PokeAPIUrlsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${Org}-${Service}-${Stage}-role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: 'VoiceQualityAlertTeamsParameterAccess'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:*'
+                Resource: "*"
+        - PolicyName: 'VoiceQualityAlertKeyAccess'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'kms:*'
+                Resource: "*"
+        - PolicyName: 'VoiceQualityAlertParameterStoreAccess'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:*'
+                Resource: "*"
+
+Outputs:
+  PokeApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${Service}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+  PokeAPIUrlsFunction:
+    Description: "Retrieve Poke APIs function"
+    Value: !GetAtt PokeAPIUrlsFunction.Arn
+  PokeAPIUrlsRole:
+    Description: "Implicit IAM Role created for function"
+    Value: !GetAtt PokeAPIUrlsRole.Arn
